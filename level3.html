@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+<html lang="zh-Hant"> <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SDG Quest - 關卡 4: 氣候行動 (問答模式)</title>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+    <style>
+        /* ==================================== */
+        /* 通用與基本樣式             */
+        /* ==================================== */
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Press Start 2P', cursive;
+            background-color: #3F51B5; /* SDG 13 的藍色調 */
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            color: #fff;
+            text-shadow: 2px 2px 0 #000;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* 確保像素字體在縮放時保持銳利 */
+        h1, h2, span, button, a, p {
+            image-rendering: crisp-edges;
+            image-rendering: pixelated;
+        }
+
+        /* ==================================== */
+        /* 關卡畫面專屬的背景元素             */
+        /* ==================================== */
+        .quiz-background-layer {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            background-image: url('img/equality_bg.png'); /* 統一使用此背景圖 */
+            background-size: cover;
+            background-position: center;
+            image-rendering: pixelated;
+            z-index: 1;
+            opacity: 0.8; /* 稍微透明，讓題目更清晰 */
+        }
+
+        /* ==================================== */
+        /* 遊戲介面頂部資訊             */
+        /* ==================================== */
+        .header-bar {
+            width: 90%;
+            max-width: 800px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 20px;
+            background-color: #2196F3; /* 與SDG 13顏色接近 */
+            border: 4px solid #1976D2;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            box-shadow: 4px 4px 0 #000;
+            z-index: 20;
+        }
+
+        .header-bar img.sdg-icon {
+            width: 50px;
+            height: 50px;
+            image-rendering: pixelated;
+            margin-right: 15px;
+        }
+
+        .header-bar .level-info {
+            display: flex;
+            align-items: center;
+            font-size: 1.2em;
+            text-shadow: 1px 1px 0 #000;
+        }
+
+        .header-bar .level-title {
+            margin-left: 10px;
+            color: #fff;
+            image-rendering: pixelated;
+            text-shadow: 2px 2px 0 #000;
+        }
+
+        .header-bar .score-info {
+            font-size: 1.2em;
+            text-shadow: 1px 1px 0 #000;
+            color: #FFEB3B;
+        }
+
+        /* ==================================== */
+        /* 遊戲區域 - 問答題介面        */
+        /* ==================================== */
+        .game-area {
+            width: 90%;
+            max-width: 800px;
+            height: 500px;
+            background-color: rgba(255, 255, 255, 0.9); /* 半透明白色背景，讓題目清晰 */
+            border: 8px solid #1976D2; /* 與SDG 13邊框色 */
+            box-shadow: 10px 10px 0 #0D47A1;
+            border-radius: 15px;
+            position: relative;
+            overflow: hidden;
+            z-index: 10;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-around;
+            align-items: center;
+            padding: 20px;
+            box-sizing: border-box; /* 內邊距不撐開盒子 */
+            color: #333; /* 黑色文字 */
+            text-shadow: none; /* 移除文字陰影，清晰度更高 */
+        }
+
+        .question-container {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .question-text {
+            font-size: 1.5em;
+            margin-bottom: 20px;
+            color: #333; /* 問題文字顏色 */
+            text-shadow: 1px 1px 0 rgba(0,0,0,0.2);
+            line-height: 1.5;
+        }
+
+        .options-container {
+            display: flex;
+            flex-direction: column;
+            width: 80%;
+        }
+
+        .option-button {
+            background-color: #64B5F6; /* 選項按鈕顏色 */
+            color: white;
+            padding: 15px 20px;
+            margin-bottom: 15px;
+            border: 4px solid #42A5F5;
+            cursor: pointer;
+            font-family: 'Press Start 2P', cursive;
+            font-size: 1em;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            box-shadow: 4px 4px 0 #1565C0;
+            text-shadow: 1px 1px 0 #000;
+            transition: background-color 0.2s, box-shadow 0.2s;
+            text-align: left; /* 選項文字靠左 */
+            word-break: break-word; /* 防止長文字溢出 */
+            white-space: normal; /* 允許多行顯示 */
+            line-height: 1.3;
+        }
+
+        .option-button:hover {
+            background-color: #90CAF9;
+            box-shadow: 2px 2px 0 #0D47A1;
+        }
+
+        .option-button.correct {
+            background-color: #4CAF50; /* 答對顏色 */
+            border-color: #388E3C;
+            box-shadow: 4px 4px 0 #1B5E20;
+        }
+
+        .option-button.wrong {
+            background-color: #F44336; /* 答錯顏色 */
+            border-color: #D32F2F;
+            box-shadow: 4px 4px 0 #B71C1C;
+        }
+
+        .feedback-icon {
+            position: absolute;
+            width: 80px;
+            height: 80px;
+            image-rendering: pixelated;
+            pointer-events: none;
+            opacity: 0;
+            animation: fadeInOut 1s forwards;
+            z-index: 25;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        @keyframes fadeInOut {
+            0% { opacity: 0; transform: translate(-50%, -50%) scale(0.5); }
+            50% { opacity: 1; transform: translate(-50%, -50%) scale(1.2); }
+            100% { opacity: 0; transform: translate(-50%, -50%) scale(0.8); }
+        }
+
+        /* ==================================== */
+        /* 遊戲結果畫面             */
+        /* ==================================== */
+        .game-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            z-index: 100;
+            display: none;
+        }
+
+        .overlay-content {
+            background-color: #2196F3; /* 與SDG 13顏色接近 */
+            padding: 30px 50px;
+            border: 8px solid #1976D2;
+            box-shadow: 10px 10px 0 #0D47A1;
+            border-radius: 15px;
+            text-align: center;
+            animation: bounceIn 0.8s ease-out;
+        }
+
+        .overlay-content h3 {
+            font-size: 2.5em;
+            color: #FFEB3B;
+            margin-bottom: 20px;
+            text-shadow: 3px 3px 0 #DAA520;
+        }
+
+        .overlay-content p {
+            font-size: 1.5em;
+            margin-bottom: 30px;
+            text-shadow: 2px 2px 0 #000, 3px 3px 0 rgba(0,0,0,0.5);
+            letter-spacing: 0.03em;
+        }
+
+        .overlay-content img.icon {
+            width: 80px;
+            height: 80px;
+            image-rendering: pixelated;
+            margin-bottom: 20px;
+        }
+
+        .overlay-content .next-level-button {
+            background-color: #FF5722;
+            color: white;
+            padding: 15px 30px;
+            border: 4px solid #D32F2F;
+            cursor: pointer;
+            font-size: 1.3em;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            box-shadow: 5px 5px 0 #A13C00;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .overlay-content .next-level-button:hover {
+            background-color: #E64A19;
+            box-shadow: 3px 3px 0 #7D2700;
+        }
+
+        @keyframes bounceIn {
+            0% { transform: scale(0.1); opacity: 0; }
+            60% { transform: scale(1.1); opacity: 1; }
+            100% { transform: scale(1); }
+        }
+
+        /* 答錯提示疊加層 */
+        .wrong-answer-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(255, 0, 0, 0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            z-index: 101; /* 比 game-overlay 高 */
+            display: none;
+        }
+
+        .wrong-answer-content {
+            background-color: #D32F2F;
+            padding: 30px 50px;
+            border: 8px solid #B71C1C;
+            box-shadow: 10px 10px 0 #880E4F;
+            border-radius: 15px;
+            text-align: center;
+            animation: bounceIn 0.8s ease-out;
+        }
+
+        .wrong-answer-content h3 {
+            font-size: 2.5em;
+            color: #FFEB3B;
+            margin-bottom: 20px;
+            text-shadow: 3px 3px 0 #DAA520;
+        }
+
+        .wrong-answer-content p {
+            font-size: 1.5em;
+            margin-bottom: 30px;
+            text-shadow: 2px 2px 0 #000, 3px 3px 0 rgba(0,0,0,0.5);
+        }
+
+        .wrong-answer-content .restart-button {
+            background-color: #FF5722;
+            color: white;
+            padding: 15px 30px;
+            border: 4px solid #D32F2F;
+            cursor: pointer;
+            font-size: 1.3em;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            box-shadow: 5px 5px 0 #A13C00;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .wrong-answer-content .restart-button:hover {
+            background-color: #E64A19;
+            box-shadow: 3px 3px 0 #7D2700;
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="quiz-background-layer"></div>
+
+    <div class="header-bar">
+        <div class="level-info">
+            <img src="img/sdg13_icon.png" alt="SDG 13 氣候行動" class="sdg-icon">
+            <span class="level-title">關卡 4: 氣候行動</span>
+        </div>
+        <div class="score-info">
+            <span id="score">答對: 0</span> / <span id="max-score">0</span>
+        </div>
+    </div>
+
+    <div class="game-area" id="gameArea">
+        <div class="question-container">
+            <p class="question-text" id="questionText">問題載入中...</p>
+        </div>
+        <div class="options-container" id="optionsContainer">
+            </div>
+    </div>
+
+    <div class="game-overlay" id="gameOverlay">
+        <div class="overlay-content">
+            <img src="img/checkmark.png" alt="關卡完成" class="icon">
+            <h3 id="overlayTitle">關卡完成！</h3>
+            <p id="overlayMessage">你對氣候行動有深刻的理解！為地球的未來貢獻一份力！</p>
+            <a href="level5.html" class="next-level-button">下一關</a>
+        </div>
+    </div>
+
+    <div class="wrong-answer-overlay" id="wrongAnswerOverlay">
+        <div class="wrong-answer-content">
+            <img src="img/wrong_icon.png" alt="答錯了" class="icon">
+            <h3>答錯了！</h3>
+            <p>請重新開始第一關。</p>
+            <a href="level1.html" class="restart-button">重新開始</a>
+        </div>
+    </div>
+
+    <audio id="gameMusic" loop>
+        <source src="img/12345.mp3" type="audio/mpeg">
+        您的瀏覽器不支援音訊元素。
+    </audio>
+
+    <script>
+        const gameArea = document.getElementById('gameArea');
+        const questionText = document.getElementById('questionText');
+        const optionsContainer = document.getElementById('optionsContainer');
+        const scoreDisplay = document.getElementById('score');
+        const maxScoreDisplay = document.getElementById('max-score');
+        const gameOverlay = document.getElementById('gameOverlay');
+        const overlayTitle = document.getElementById('overlayTitle');
+        const overlayMessage = document.getElementById('overlayMessage');
+        const overlayIcon = gameOverlay.querySelector('.icon');
+        const nextLevelButton = gameOverlay.querySelector('.next-level-button');
+        const wrongAnswerOverlay = document.getElementById('wrongAnswerOverlay');
+        const gameMusic = document.getElementById('gameMusic'); // 音樂元素
+
+        let correctAnswersCount = 0;
+        const totalQuestionsRequired = 5; // 這關要答對的題目數量 (總共 5 題，全部答對才算通關)
+        let currentQuestionIndex = 0; // 當前問題的索引
+
+        // 問答題資料 for SDG 13: 氣候行動 (共 8 題，會隨機選 5 題)
+        const questions = [
+            {
+                question: "氣候變遷主要由什麼引起？",
+                options: [
+                    "A. 地球軌道變化",
+                    "B. 太陽活動增強",
+                    "C. 人類活動（特別是溫室氣體排放）",
+                    "D. 月球引力變化"
+                ],
+                correctAnswer: "C. 人類活動（特別是溫室氣體排放）"
+            },
+            {
+                question: "以下哪種溫室氣體對全球暖化貢獻最大？",
+                options: [
+                    "A. 氧氣",
+                    "B. 氮氣",
+                    "C. 二氧化碳",
+                    "D. 氬氣"
+                ],
+                correctAnswer: "C. 二氧化碳"
+            },
+            {
+                question: "氣候變遷會導致哪些環境影響？",
+                options: [
+                    "A. 僅導致局部地區降雨量增加",
+                    "B. 全球氣溫上升，極端天氣事件頻繁，海平面上升",
+                    "C. 讓所有地區變得更冷",
+                    "D. 減少所有自然災害的發生"
+                ],
+                correctAnswer: "B. 全球氣溫上升，極端天氣事件頻繁，海平面上升"
+            },
+            {
+                question: "為了減緩氣候變遷，個人可以採取的最有效行動之一是什麼？",
+                options: [
+                    "A. 每天洗車",
+                    "B. 大量購買塑膠製品",
+                    "C. 節約能源，多利用大眾運輸或步行/騎自行車",
+                    "D. 經常使用一次性餐具"
+                ],
+                correctAnswer: "C. 節約能源，多利用大眾運輸或步行/騎自行車"
+            },
+            {
+                question: "什麼是再生能源？",
+                options: [
+                    "A. 煤炭和石油",
+                    "B. 核能",
+                    "C. 太陽能、風能、水力等可自然補充的能源",
+                    "D. 天然氣"
+                ],
+                correctAnswer: "C. 太陽能、風能、水力等可自然補充的能源"
+            },
+            {
+                question: "《巴黎協定》的主要目標是什麼？",
+                options: [
+                    "A. 停止所有工業發展",
+                    "B. 限制全球氣溫升幅，將其控制在遠低於工業化前水準2°C之內，並努力限制在1.5°C之內",
+                    "C. 鼓勵各國互相競爭碳排放",
+                    "D. 禁止所有國際貿易"
+                ],
+                correctAnswer: "B. 限制全球氣溫升幅，將其控制在遠低於工業化前水準2°C之內，並努力限制在1.5°C之內"
+            },
+            {
+                question: "什麼是碳足跡？",
+                options: [
+                    "A. 偵測碳的地方",
+                    "B. 個人、組織、活動或產品產生的溫室氣體總量",
+                    "C. 製造碳排放的工廠數量",
+                    "D. 森林中樹木的碳含量"
+                ],
+                correctAnswer: "B. 個人、組織、活動或產品產生的溫室氣體總量"
+            },
+            {
+                question: "植樹造林對氣候行動有何益處？",
+                options: [
+                    "A. 增加土壤侵蝕",
+                    "B. 吸收空氣中的二氧化碳，有助於減緩暖化",
+                    "C. 增加城市熱島效應",
+                    "D. 對氣候沒有影響"
+                ],
+                correctAnswer: "B. 吸收空氣中的二氧化碳，有助於減緩暖化"
+            }
+        ];
+
+        let shuffledQuestions = []; // 儲存隨機排序後的問題
+        let currentQuestionData = {}; // 儲存當前顯示的問題數據
+
+        // 初始化遊戲
+        function initGame() {
+            correctAnswersCount = 0;
+            currentQuestionIndex = 0;
+            scoreDisplay.textContent = `答對: ${correctAnswersCount}`;
+            maxScoreDisplay.textContent = totalQuestionsRequired;
+            gameOverlay.style.display = 'none'; // 隱藏通關畫面
+            wrongAnswerOverlay.style.display = 'none'; // 隱藏答錯畫面
+
+            // 隨機打亂題目順序並選取指定數量
+            shuffledQuestions = shuffleArray(questions).slice(0, totalQuestionsRequired);
+            
+            // 播放音樂
+            playMusic();
+            
+            // 顯示第一道題目
+            displayQuestion();
+        }
+
+        // 播放音樂
+        function playMusic() {
+            gameMusic.volume = 0.4; // 設定音量，例如 40%
+            const playPromise = gameMusic.play();
+
+            if (playPromise !== undefined) {
+                playPromise.then(_ => {
+                    // 音樂已成功自動播放
+                }).catch(error => {
+                    // 自動播放被阻止，通常會在這裡處理用戶互動後播放
+                    console.log("Music autoplay prevented:", error);
+                    // 為了確保音樂能播放，可以在用戶首次點擊任何按鈕後再嘗試播放
+                    document.addEventListener('click', function userInteractionPlay() {
+                        gameMusic.play();
+                        document.removeEventListener('click', userInteractionPlay);
+                    }, { once: true });
+                });
+            }
+        }
+
+        // 隨機打亂陣列
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]]; // ES6 陣列解構賦值交換
+            }
+            return array;
+        }
+
+        // 顯示問題和選項
+        function displayQuestion() {
+            if (currentQuestionIndex >= totalQuestionsRequired) {
+                endLevel(); // 所有題目答完，進入通關
+                return;
+            }
+
+            currentQuestionData = shuffledQuestions[currentQuestionIndex];
+            questionText.textContent = currentQuestionData.question;
+            optionsContainer.innerHTML = ''; // 清空舊選項
+
+            // 重新啟用按鈕
+            optionsContainer.style.pointerEvents = 'auto'; 
+
+            currentQuestionData.options.forEach(option => {
+                const button = document.createElement('button');
+                button.classList.add('option-button');
+                button.textContent = option;
+                button.addEventListener('click', () => checkAnswer(button, option, currentQuestionData.correctAnswer));
+                optionsContainer.appendChild(button);
+            });
+        }
+
+        // 檢查答案
+        function checkAnswer(selectedButton, selectedOption, correctAnswer) {
+            // 禁用所有選項，防止重複點擊
+            optionsContainer.style.pointerEvents = 'none'; // 禁用點擊事件
+
+            // 顯示正確答案的高亮
+            Array.from(optionsContainer.children).forEach(button => {
+                if (button.textContent === correctAnswer) {
+                    button.classList.add('correct');
+                }
+            });
+
+            if (selectedOption === correctAnswer) {
+                selectedButton.classList.add('correct'); // 選中的按鈕也高亮正確
+                correctAnswersCount++;
+                scoreDisplay.textContent = `答對: ${correctAnswersCount}`;
+                showFeedbackIcon('img/correct_icon.png');
+
+                // 延遲後進入下一題
+                setTimeout(() => {
+                    currentQuestionIndex++;
+                    displayQuestion();
+                }, 1500); // 1.5 秒後顯示下一題
+            } else {
+                selectedButton.classList.add('wrong'); // 選中的按鈕高亮錯誤
+                showFeedbackIcon('img/wrong_icon.png');
+                
+                // 答錯，停止音樂，顯示答錯畫面
+                gameMusic.pause(); // 暫停音樂
+                gameMusic.currentTime = 0; // 音樂回到開頭
+                setTimeout(() => {
+                    wrongAnswerOverlay.style.display = 'flex'; // 顯示答錯畫面
+                    // 不直接跳轉，讓用戶看到提示後點擊「重新開始」
+                }, 1500); // 1.5 秒後顯示答錯提示
+            }
+        }
+
+        // 顯示答對/答錯圖示
+        function showFeedbackIcon(iconSrc) {
+            const feedbackIcon = document.createElement('img');
+            feedbackIcon.src = iconSrc;
+            feedbackIcon.classList.add('feedback-icon');
+            gameArea.appendChild(feedbackIcon);
+
+            // 移除圖示
+            setTimeout(() => {
+                feedbackIcon.remove();
+            }, 1000); // 與動畫時間匹配
+        }
+
+        // 關卡成功結束
+        function endLevel() {
+            gameMusic.pause(); // 暫停音樂
+            gameMusic.currentTime = 0; // 音樂回到開頭
+            gameOverlay.style.display = 'flex'; // 顯示通關畫面
+            overlayTitle.textContent = "關卡完成！";
+            overlayMessage.textContent = "你對氣候行動有深刻的理解！為地球的未來貢獻一份力！";
+            overlayIcon.src = "img/checkmark.png";
+            nextLevelButton.href = "level4.html"; // 通關後到 level5.html
+        }
+
+        // 頁面載入時初始化遊戲
+        window.onload = initGame;
+
+    </script>
+</body>
+</html>
