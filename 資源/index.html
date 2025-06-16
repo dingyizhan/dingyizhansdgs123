@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SDG Quest - 永續發展目標任務</title>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+    <style>
+        /* ==================================== */
+        /* 通用與基本樣式             */
+        /* ==================================== */
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Press Start 2P', cursive;
+            background-color: #3F51B5; /* 預設背景色，如果圖片加載失敗則顯示 */
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            color: #fff;
+            text-shadow: 2px 2px 0 #000;
+            overflow: hidden; /* 防止滾動條出現 */
+            position: relative;
+
+            /* ==================================== */
+            /* 設置圖片為整個頁面的背景         */
+            /* ==================================== */
+            background-image: url('Copilot_20250602_144507.png'); /* **已修正為 .png** */
+            background-size: cover; /* 讓圖片覆蓋整個視窗 */
+            background-position: center; /* 圖片居中顯示 */
+            background-repeat: no-repeat; /* 不重複圖片 */
+            background-attachment: fixed; /* 圖片固定不滾動 */
+            image-rendering: pixelated; /* 保持像素風格 */
+        }
+
+        /* 確保像素字體在縮放時保持銳利 */
+        h1, h2, span, button, a, p {
+            image-rendering: crisp-edges;
+            image-rendering: pixelated;
+        }
+
+        /* ==================================== */
+        /* 主容器 - 調整為 16:9 比例            */
+        /* (這裡承載標題和按鈕，背景會稍微透明) */
+        /* ==================================== */
+        .container {
+            width: 90%; /* 佔據大部分寬度 */
+            max-width: 960px; /* 設定最大寬度為 960px，以實現 960x540 基準 */
+            
+            aspect-ratio: 16 / 9; /* 設定為 16:9 比例 */
+            
+            background-color: rgba(255, 255, 255, 0.8); /* 半透明白色背景，讓背景圖可見 */
+            border: 8px solid #4CAF50; /* 綠色邊框，象徵永續 */
+            box-shadow: 10px 10px 0 #2E7D32; /* 陰影效果 */
+            border-radius: 15px; /* 圓角 */
+            position: relative;
+            z-index: 10; /* 確保在背景之上 */
+            display: flex;
+            flex-direction: column;
+            justify-content: center; /* 垂直居中內容 */
+            align-items: center; /* 水平居中內容 */
+            padding: 20px; /* 內邊距 */
+            box-sizing: border-box; /* 內邊距和邊框不增加總尺寸 */
+            color: #333; /* 文字顏色 */
+            text-shadow: none; /* 移除文字陰影 */
+            overflow: hidden; /* 防止內容溢出 */
+        }
+
+        /* 響應式調整，確保在不同螢幕尺寸下保持比例 */
+        @media (max-width: 1000px) { /* 當螢幕寬度小於某值時 */
+            .container {
+                max-height: 80vh; /* 限制最大高度為視窗高度的80% */
+                width: auto; /* 讓寬度根據max-height和aspect-ratio調整 */
+                height: auto;
+            }
+        }
+        @media (max-height: 600px) { /* 當螢幕高度小於某值時 */
+            .container {
+                max-width: 90vw; /* 限制最大寬度為視窗寬度的90% */
+                width: auto;
+                height: auto;
+            }
+        }
+
+        /* ==================================== */
+        /* 標題樣式             */
+        /* ==================================== */
+        h1 {
+            font-size: 2.8em; /* 稍微加大標題字體 */
+            color: #333;
+            margin-bottom: 40px; /* 增加標題與按鈕間距 */
+            text-shadow: 3px 3px 0 rgba(0,0,0,0.3);
+            text-align: center;
+        }
+
+        /* ==================================== */
+        /* 按鈕樣式             */
+        /* ==================================== */
+        .start-button, .instruction-button {
+            background-color: #FFC107; /* 黃色按鈕 */
+            color: #333;
+            padding: 18px 40px; /* 稍微加大按鈕尺寸 */
+            margin-bottom: 25px; /* 增加按鈕間距 */
+            border: 4px solid #FFA000;
+            cursor: pointer;
+            font-size: 1.6em; /* 稍微加大按鈕字體 */
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            box-shadow: 6px 6px 0 #FF6F00; /* 稍微加大陰影 */
+            text-decoration: none;
+            display: inline-block;
+            transition: background-color 0.2s, box-shadow 0.2s;
+        }
+
+        .start-button:hover, .instruction-button:hover {
+            background-color: #FFD54F;
+            box-shadow: 3px 3px 0 #FF8F00;
+        }
+
+        /* ==================================== */
+        /* 遊戲背景音樂             */
+        /* ==================================== */
+        #gameMusic {
+            display: none; /* 隱藏音樂播放器 */
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>SDG Quest</h1>
+        <a href="level1.html" class="start-button">開始遊戲</a>
+        <a href="instructions.html" class="instruction-button">遊戲說明</a>
+    </div>
+
+    <audio id="gameMusic" loop>
+        <source src="12345.mp3" type="audio/mpeg">
+        您的瀏覽器不支援音訊元素。
+    </audio>
+
+    <script>
+        const gameMusic = document.getElementById('gameMusic');
+
+        // 嘗試播放音樂，並處理自動播放限制
+        function playMusic() {
+            gameMusic.volume = 0.4; // 設定音量為 40%
+            const playPromise = gameMusic.play();
+
+            if (playPromise !== undefined) {
+                playPromise.then(_ => {
+                    // 自動播放成功
+                }).catch(error => {
+                    // 自動播放被阻止，等待使用者互動
+                    console.log("Music autoplay prevented:", error);
+                    // 在使用者與頁面互動後播放音樂
+                    document.addEventListener('click', function userInteractionPlay() {
+                        gameMusic.play();
+                        document.removeEventListener('click', userInteractionPlay);
+                    }, { once: true }); // 僅觸發一次
+                });
+            }
+        }
+
+        // 頁面載入時嘗試播放音樂
+        window.onload = playMusic;
+    </script>
+</body>
+</html>

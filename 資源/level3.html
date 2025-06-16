@@ -1,0 +1,592 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SDG Quest - 關卡 3: 永續城市與社區 (問答模式)</title>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+    <style>
+        /* ==================================== */
+        /* 通用與基本樣式             */
+        /* ==================================== */
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Press Start 2P', cursive;
+            background-color: #F44336; /* SDG 11 的橙色調 */
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            color: #fff;
+            text-shadow: 2px 2px 0 #000;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* 確保像素字體在縮放時保持銳利 */
+        h1, h2, span, button, a, p {
+            image-rendering: crisp-edges;
+            image-rendering: pixelated;
+        }
+
+        /* ==================================== */
+        /* 關卡畫面專屬的背景元素             */
+        /* ==================================== */
+        .quiz-background-layer {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            background-image: url('equality_bg.png'); /* 統一使用此背景圖 */
+            background-size: cover;
+            background-position: center;
+            image-rendering: pixelated;
+            z-index: 1;
+            opacity: 0.8; /* 稍微透明，讓題目更清晰 */
+        }
+
+        /* ==================================== */
+        /* 遊戲介面頂部資訊             */
+        /* ==================================== */
+        .header-bar {
+            width: 90%;
+            max-width: 800px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 20px;
+            background-color: #D32F2F; /* 與SDG 11顏色接近 */
+            border: 4px solid #B71C1C;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            box-shadow: 4px 4px 0 #000;
+            z-index: 20;
+        }
+
+        .header-bar img.sdg-icon {
+            width: 50px;
+            height: 50px;
+            image-rendering: pixelated;
+            margin-right: 15px;
+        }
+
+        .header-bar .level-info {
+            display: flex;
+            align-items: center;
+            font-size: 1.2em;
+            text-shadow: 1px 1px 0 #000;
+        }
+
+        .header-bar .level-title {
+            margin-left: 10px;
+            color: #fff;
+            image-rendering: pixelated;
+            text-shadow: 2px 2px 0 #000;
+        }
+
+        .header-bar .score-info {
+            font-size: 1.2em;
+            text-shadow: 1px 1px 0 #000;
+            color: #FFEB3B;
+        }
+
+        /* ==================================== */
+        /* 遊戲區域 - 問答題介面 (調整為 16:9)  */
+        /* ==================================== */
+        .game-area {
+            width: 90%;
+            /* 設置最大寬度，確保在大螢幕上不過大 */
+            max-width: 960px; /* 16:9 比例的合適寬度，例如 960px x 540px */
+            
+            /* 移除固定高度，改用 aspect-ratio */
+            /* height: 500px; */ 
+            
+            aspect-ratio: 16 / 9; /* 設定為 16:9 比例 */
+            
+            background-color: rgba(255, 255, 255, 0.9);
+            border: 8px solid #B71C1C; /* 與SDG 11邊框色 */
+            box-shadow: 10px 10px 0 #880E4F;
+            border-radius: 15px;
+            position: relative;
+            overflow: hidden;
+            z-index: 10;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-around;
+            align-items: center;
+            padding: 20px;
+            box-sizing: border-box;
+            color: #333;
+            text-shadow: none;
+        }
+
+        /* 響應式調整，確保在不同螢幕尺寸下保持比例 */
+        @media (max-width: 1000px) { /* 當螢幕寬度小於某值時 */
+            .game-area {
+                /* 確保在窄螢幕下，高度不超出視窗，並且寬度能適應 */
+                max-height: 80vh;
+                width: auto; /* 讓寬度根據max-height和aspect-ratio調整 */
+                height: auto;
+            }
+        }
+        @media (max-height: 600px) { /* 當螢幕高度小於某值時 */
+            .game-area {
+                /* 確保在短螢幕下，寬度不超出視窗，並且高度能適應 */
+                max-width: 90vw;
+                width: auto;
+                height: auto;
+            }
+        }
+
+        .question-container {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .question-text {
+            font-size: 1.5em;
+            margin-bottom: 20px;
+            color: #333;
+            text-shadow: 1px 1px 0 rgba(0,0,0,0.2);
+            line-height: 1.5;
+        }
+
+        .options-container {
+            display: flex;
+            flex-direction: column;
+            width: 80%;
+        }
+
+        .option-button {
+            background-color: #FF5722;
+            color: white;
+            padding: 15px 20px;
+            margin-bottom: 15px;
+            border: 4px solid #E64A19;
+            cursor: pointer;
+            font-family: 'Press Start 2P', cursive;
+            font-size: 1em;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            box-shadow: 4px 4px 0 #BF360C;
+            text-shadow: 1px 1px 0 #000;
+            transition: background-color 0.2s, box-shadow 0.2s;
+            text-align: left;
+            word-break: break-word;
+            white-space: normal;
+            line-height: 1.3;
+        }
+
+        .option-button:hover {
+            background-color: #FF7043;
+            box-shadow: 2px 2px 0 #E64A19;
+        }
+
+        .option-button.correct {
+            background-color: #4CAF50;
+            border-color: #388E3C;
+            box-shadow: 4px 4px 0 #1B5E20;
+        }
+
+        .option-button.wrong {
+            background-color: #F44336;
+            border-color: #D32F2F;
+            box-shadow: 4px 4px 0 #B71C1C;
+        }
+
+        .feedback-icon {
+            position: absolute;
+            width: 80px;
+            height: 80px;
+            image-rendering: pixelated;
+            pointer-events: none;
+            opacity: 0;
+            animation: fadeInOut 1s forwards;
+            z-index: 25;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        @keyframes fadeInOut {
+            0% { opacity: 0; transform: translate(-50%, -50%) scale(0.5); }
+            50% { opacity: 1; transform: translate(-50%, -50%) scale(1.2); }
+            100% { opacity: 0; transform: translate(-50%, -50%) scale(0.8); }
+        }
+
+        /* ==================================== */
+        /* 遊戲結果畫面             */
+        /* ==================================== */
+        .game-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            z-index: 100;
+            display: none;
+        }
+
+        .overlay-content {
+            background-color: #D32F2F; /* 與SDG 11顏色接近 */
+            padding: 30px 50px;
+            border: 8px solid #B71C1C;
+            box-shadow: 10px 10px 0 #880E4F;
+            border-radius: 15px;
+            text-align: center;
+            animation: bounceIn 0.8s ease-out;
+            max-width: 90%;
+            box-sizing: border-box;
+        }
+
+        .overlay-content h3 {
+            font-size: 2.5em;
+            color: #FFEB3B;
+            margin-bottom: 20px;
+            text-shadow: 3px 3px 0 #DAA520;
+        }
+
+        .overlay-content p {
+            font-size: 1.5em;
+            margin-bottom: 30px;
+            text-shadow: 2px 2px 0 #000, 3px 3px 0 rgba(0,0,0,0.5);
+            letter-spacing: 0.03em;
+        }
+
+        .overlay-content img.icon {
+            width: 80px;
+            height: 80px;
+            image-rendering: pixelated;
+            margin-bottom: 20px;
+        }
+
+        .overlay-content .next-level-button {
+            background-color: #FF5722;
+            color: white;
+            padding: 15px 30px;
+            border: 4px solid #D32F2F;
+            cursor: pointer;
+            font-size: 1.3em;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            box-shadow: 5px 5px 0 #A13C00;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .overlay-content .next-level-button:hover {
+            background-color: #E64A19;
+            box-shadow: 3px 3px 0 #7D2700;
+        }
+
+        /* 答錯提示疊加層 (此區塊在JS中已不再直接顯示，答錯將直接跳轉) */
+        .wrong-answer-overlay {
+            display: none; /* 預設隱藏，且JS中也不再修改其display屬性 */
+        }
+
+        @keyframes bounceIn {
+            0% { transform: scale(0.1); opacity: 0; }
+            60% { transform: scale(1.1); opacity: 1; }
+            100% { transform: scale(1); }
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="quiz-background-layer"></div>
+
+    <div class="header-bar">
+        <div class="level-info">
+            <img src="sdg11_icon.png" alt="SDG 11 永續城市與社區" class="sdg-icon">
+            <span class="level-title">關卡 3: 永續城市與社區</span>
+        </div>
+        <div class="score-info">
+            <span id="score">答對: 0</span> / <span id="max-score">0</span>
+        </div>
+    </div>
+
+    <div class="game-area" id="gameArea">
+        <div class="question-container">
+            <p class="question-text" id="questionText">問題載入中...</p>
+        </div>
+        <div class="options-container" id="optionsContainer">
+            </div>
+    </div>
+
+    <div class="game-overlay" id="gameOverlay">
+        <div class="overlay-content">
+            <img src="checkmark.png" alt="關卡完成" class="icon">
+            <h3 id="overlayTitle">關卡完成！</h3>
+            <p id="overlayMessage">你對永續城市與社區的知識淵博！</p>
+            <a href="level4.html" class="next-level-button">下一關</a>
+        </div>
+    </div>
+
+    <audio id="gameMusic" loop>
+        <source src="12345.mp3" type="audio/mpeg">
+        您的瀏覽器不支援音訊元素。
+    </audio>
+
+    <script>
+        const gameArea = document.getElementById('gameArea');
+        const questionText = document.getElementById('questionText');
+        const optionsContainer = document.getElementById('optionsContainer');
+        const scoreDisplay = document.getElementById('score');
+        const maxScoreDisplay = document.getElementById('max-score');
+        const gameOverlay = document.getElementById('gameOverlay');
+        const gameMusic = document.getElementById('gameMusic');
+
+        let correctAnswersCount = 0;
+        const totalQuestionsRequired = 5; // 這關要答對的題目數量
+        let currentQuestionIndex = 0; // 當前問題的索引
+
+        // 問答題資料 for SDG 11: 永續城市與社區 (共 8 題，會隨機選 5 題)
+        const questions = [
+            {
+                question: "以下哪項是永續城市的重要特徵？",
+                options: [
+                    "A. 大量興建私人汽車道，鼓勵多開車",
+                    "B. 綠色空間、公共交通、可負擔住房和包容性規劃",
+                    "C. 僅專注於高樓大廈建設，不顧及環境",
+                    "D. 城市快速擴張，不考慮資源限制"
+                ],
+                correctAnswer: "B. 綠色空間、公共交通、可負擔住房和包容性規劃"
+            },
+            {
+                question: "什麼是城市貧民窟改造的目標？",
+                options: [
+                    "A. 僅拆除貧民窟，不提供替代方案",
+                    "B. 改善居住條件，提供基本服務，提升居民生活品質",
+                    "C. 將貧民窟居民驅逐出城市",
+                    "D. 建立高牆隔離貧民窟"
+                ],
+                correctAnswer: "B. 改善居住條件，提供基本服務，提升居民生活品質"
+            },
+            {
+                question: "為什麼發展大眾運輸對永續城市很重要？",
+                options: [
+                    "A. 減少城市噪音",
+                    "B. 減少交通擁堵、空氣污染，提高能源效率",
+                    "C. 增加私人汽車銷量",
+                    "D. 讓出行變得更慢"
+                ],
+                correctAnswer: "B. 減少交通擁堵、空氣污染，提高能源效率"
+            },
+            {
+                question: "以下哪種方式有助於社區變得更具韌性（Resilient）？",
+                options: [
+                    "A. 忽略災害風險，不採取預防措施",
+                    "B. 建立災害預警系統，強化基礎設施，促進社區參與防災",
+                    "C. 鼓勵居民自行解決所有問題",
+                    "D. 只依賴外部援助"
+                ],
+                correctAnswer: "B. 建立災害預警系統，強化基礎設施，促進社區參與防災"
+            },
+            {
+                question: "何謂「文化遺產保護」在永續城市發展中的意義？",
+                options: [
+                    "A. 阻礙城市現代化進程",
+                    "B. 維護歷史文化價值，促進旅遊業發展，增強城市特色與認同感",
+                    "C. 僅為少數人保留的私人財產",
+                    "D. 只有老舊建築才需要保護"
+                ],
+                correctAnswer: "B. 維護歷史文化價值，促進旅遊業發展，增強城市特色與認同感"
+            },
+            {
+                question: "參與式規劃 (Participatory Planning) 在永續城市中扮演什麼角色？",
+                options: [
+                    "A. 決策權集中於少數專家",
+                    "B. 鼓勵市民參與城市發展決策，確保規劃符合居民需求",
+                    "C. 僅是形式上的參與",
+                    "D. 延長規劃時間，降低效率"
+                ],
+                correctAnswer: "B. 鼓勵市民參與城市發展決策，確保規劃符合居民需求"
+            },
+            {
+                question: "為了減少城市對環境的影響，應推廣哪種廢棄物管理方式？",
+                options: [
+                    "A. 大量焚燒垃圾",
+                    "B. 資源回收、垃圾分類、減少廢棄物產生",
+                    "C. 將所有垃圾填埋",
+                    "D. 隨意丟棄垃圾"
+                ],
+                correctAnswer: "B. 資源回收、垃圾分類、減少廢棄物產生"
+            },
+            {
+                question: "永續城市規劃中，為什麼綠色空間（如公園、綠地）很重要？",
+                options: [
+                    "A. 僅為城市增加美觀",
+                    "B. 改善空氣品質，調節氣溫，提供休憩場所，增強生物多樣性",
+                    "C. 佔用土地，影響開發",
+                    "D. 對城市環境沒有實質影響"
+                ],
+                correctAnswer: "B. 改善空氣品質，調節氣溫，提供休憩場所，增強生物多樣性"
+            }
+        ];
+
+        let shuffledQuestions = [];
+        let currentQuestionData = {};
+
+        // 初始化遊戲
+        function initGame() {
+            correctAnswersCount = 0;
+            currentQuestionIndex = 0;
+            scoreDisplay.textContent = `答對: ${correctAnswersCount}`;
+            maxScoreDisplay.textContent = totalQuestionsRequired;
+            gameOverlay.style.display = 'none';
+
+            // 隨機打亂題目順序並選取指定數量
+            shuffledQuestions = shuffleArray(questions).slice(0, totalQuestionsRequired);
+            
+            // 播放音樂
+            playMusic();
+            
+            // 顯示第一道題目
+            displayQuestion();
+        }
+
+        // 播放音樂
+        function playMusic() {
+            gameMusic.volume = 0.4;
+            const playPromise = gameMusic.play();
+
+            if (playPromise !== undefined) {
+                playPromise.then(_ => {
+                }).catch(error => {
+                    console.log("Music autoplay prevented:", error);
+                    document.addEventListener('click', function userInteractionPlay() {
+                        gameMusic.play();
+                        document.removeEventListener('click', userInteractionPlay);
+                    }, { once: true });
+                });
+            }
+        }
+
+        // 隨機打亂陣列
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        // 顯示問題和選項
+        function displayQuestion() {
+            if (currentQuestionIndex >= totalQuestionsRequired) {
+                endLevel();
+                return;
+            }
+
+            currentQuestionData = shuffledQuestions[currentQuestionIndex];
+            questionText.textContent = currentQuestionData.question;
+            optionsContainer.innerHTML = ''; // 清空舊選項
+
+            optionsContainer.style.pointerEvents = 'auto'; 
+
+            currentQuestionData.options.forEach(option => {
+                const button = document.createElement('button');
+                button.classList.add('option-button');
+                button.textContent = option;
+                button.addEventListener('click', () => checkAnswer(button, option, currentQuestionData.correctAnswer));
+                optionsContainer.appendChild(button);
+            });
+        }
+
+        // 檢查答案
+        function checkAnswer(selectedButton, selectedOption, correctAnswer) {
+            optionsContainer.style.pointerEvents = 'none'; 
+
+            // 顯示正確答案的高亮
+            Array.from(optionsContainer.children).forEach(button => {
+                if (button.textContent === correctAnswer) {
+                    button.classList.add('correct');
+                }
+            });
+
+            if (selectedOption === correctAnswer) {
+                selectedButton.classList.add('correct');
+                correctAnswersCount++;
+                scoreDisplay.textContent = `答對: ${correctAnswersCount}`;
+                showFeedbackIcon('correct_icon.png');
+
+                setTimeout(() => {
+                    currentQuestionIndex++;
+                    displayQuestion();
+                }, 1500);
+            } else {
+                selectedButton.classList.add('wrong');
+                showFeedbackIcon('wrong_icon.png');
+                
+                gameMusic.pause(); // 暫停音樂
+                gameMusic.currentTime = 0; // 音樂回到開頭
+                
+                // 延遲一小段時間讓錯誤提示圖示顯示，然後自動重新載入當前關卡
+                setTimeout(() => {
+                    window.location.reload(); // 直接重新載入當前頁面 (重新開始當前關卡)
+                }, 1000); // 1 秒後自動重新載入
+            }
+        }
+
+        // 顯示答對/答錯圖示
+        function showFeedbackIcon(iconSrc) {
+            const feedbackIcon = document.createElement('img');
+            feedbackIcon.src = iconSrc;
+            feedbackIcon.classList.add('feedback-icon');
+            gameArea.appendChild(feedbackIcon);
+
+            // 移除圖示
+            setTimeout(() => {
+                feedbackIcon.remove();
+            }, 1000);
+        }
+
+        // 關卡成功結束
+        function endLevel() {
+            gameMusic.pause();
+            gameMusic.currentTime = 0;
+            
+            // 清空 overlay content
+            const overlayContent = gameOverlay.querySelector('.overlay-content');
+            overlayContent.innerHTML = ''; 
+
+            // 添加通關訊息
+            const checkmarkIcon = document.createElement('img');
+            checkmarkIcon.src = 'checkmark.png';
+            checkmarkIcon.alt = '關卡完成';
+            checkmarkIcon.classList.add('icon');
+            overlayContent.appendChild(checkmarkIcon);
+
+            const title = document.createElement('h3');
+            title.textContent = '關卡完成！';
+            overlayContent.appendChild(title);
+
+            const message = document.createElement('p');
+            message.textContent = '你對永續城市與社區的知識淵博！';
+            overlayContent.appendChild(message);
+
+            // 添加下一關按鈕
+            const nextButton = document.createElement('a');
+            nextButton.href = 'level4.html';
+            nextButton.classList.add('next-level-button');
+            nextButton.textContent = '下一關';
+            overlayContent.appendChild(nextButton);
+
+            gameOverlay.style.display = 'flex';
+        }
+
+        // 頁面載入時初始化遊戲
+        window.onload = initGame;
+
+    </script>
+</body>
+</html>
